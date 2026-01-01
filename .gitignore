@@ -1,0 +1,73 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+.Python
+*.pyc
+__pycache__/
+*$py.class
+*$pyc.class
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.tox/
+.coverage
+.nox/
+.eggs/
+*.egg
+*.egg-info/
+.installed.cfg
+*.egg-link
+.venv/
+venv/
+env/
+ENV/
+.pytest_cache/
+.pytest_cache/*
+.pytest_cache/**/*
+.coverage
+htmlcov/
+.coverage.xml
+.coverage.*
+
+# Virtual Environment
+.venv
+venv/
+env/
+ENV
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+log/
+
+# Environment
+.env
+.env.local
+.env.dev
+.env.test
+
+# Database
+*.db
+*.db-journal
+
+# Build
+build/
+dist/
+*.egg-info/

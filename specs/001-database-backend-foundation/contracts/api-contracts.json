@@ -1,0 +1,983 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Database and Backend Foundation API",
+    "version": "1.0.0",
+    "description": "API contracts for the secure PostgreSQL record management system backend foundation"
+  },
+  "paths": {
+    "/api/users": {
+      "post": {
+        "summary": "Create User",
+        "description": "Creates a new user account",
+        "tags": ["Users"],
+        "security": [{"BearerAuth": ["admin"]}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "password", "role"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "User's full name"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "User's email address"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "Plain text password (will be hashed)"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": ["admin", "user"],
+                    "description": "User's access role"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Email already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/{id}": {
+      "get": {
+        "summary": "Get User",
+        "description": "Retrieves user information",
+        "tags": ["Users"],
+        "security": [{"BearerAuth": ["admin", "user"]}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update User",
+        "description": "Updates user information",
+        "tags": ["Users"],
+        "security": [{"BearerAuth": ["admin", "user"]}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "User's full name"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "User's email address"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": ["admin", "user"],
+                    "description": "User's access role"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete User",
+        "description": "Deletes a user account",
+        "tags": ["Users"],
+        "security": [{"BearerAuth": ["admin"]}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "User deleted successfully"
+          },
+          "404": {
+            "description": "User not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "summary": "User Authentication",
+        "description": "Authenticates user credentials",
+        "tags": ["Authentication"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "description": "User's email address"
+                  },
+                  "password": {
+                    "type": "string",
+                    "description": "User's password"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authentication successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string",
+                      "description": "Authentication token"
+                    },
+                    "user": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/commissioner-records": {
+      "post": {
+        "summary": "Create Commissioner Record",
+        "description": "Creates a new commissioner record",
+        "tags": ["Records"],
+        "security": [{"BearerAuth": ["admin", "user"]}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["acc_no", "department", "file_no", "subject", "year", "page", "condition", "record_type"],
+                "properties": {
+                  "acc_no": {
+                    "type": "integer",
+                    "description": "Account number"
+                  },
+                  "department": {
+                    "type": "string",
+                    "description": "Department name"
+                  },
+                  "file_no": {
+                    "type": "string",
+                    "description": "File number"
+                  },
+                  "subject": {
+                    "type": "string",
+                    "description": "Subject matter"
+                  },
+                  "year": {
+                    "type": "integer",
+                    "description": "Year"
+                  },
+                  "page": {
+                    "type": "integer",
+                    "description": "Page number"
+                  },
+                  "condition": {
+                    "type": "string",
+                    "description": "Condition of the record"
+                  },
+                  "record_type": {
+                    "type": "string",
+                    "description": "Type of record"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Record created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommissionerRecord"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Search Commissioner Records",
+        "description": "Searches commissioner records with filters",
+        "tags": ["Records"],
+        "security": [{"BearerAuth": ["admin", "user"]}],
+        "parameters": [
+          {
+            "name": "acc_no",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Filter by account number"
+          },
+          {
+            "name": "department",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by department"
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Filter by year"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Records retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CommissionerRecord"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/commissioner-records/{id}": {
+      "get": {
+        "summary": "Get Commissioner Record",
+        "description": "Retrieves a commissioner record",
+        "tags": ["Records"],
+        "security": [{"BearerAuth": ["admin", "user"]}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Record retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommissionerRecord"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Commissioner Record",
+        "description": "Updates a commissioner record",
+        "tags": ["Records"],
+        "security": [{"BearerAuth": ["admin"]}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommissionerRecord"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Record updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommissionerRecord"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Commissioner Record",
+        "description": "Deletes a commissioner record",
+        "tags": ["Records"],
+        "security": [{"BearerAuth": ["admin"]}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Record deleted successfully"
+          },
+          "404": {
+            "description": "Record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/court-records": {
+      "post": {
+        "summary": "Create Court Record",
+        "description": "Creates a new court record",
+        "tags": ["Records"],
+        "security": [{"BearerAuth": ["admin", "user"]}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["acc_no", "court", "suit_no", "plaintiff", "defendant", "claim_or_charge", "date_from", "date_to", "language"],
+                "properties": {
+                  "acc_no": {
+                    "type": "integer",
+                    "description": "Account number"
+                  },
+                  "court": {
+                    "type": "string",
+                    "description": "Court name"
+                  },
+                  "suit_no": {
+                    "type": "string",
+                    "description": "Suit number"
+                  },
+                  "plaintiff": {
+                    "type": "string",
+                    "description": "Plaintiff name"
+                  },
+                  "defendant": {
+                    "type": "string",
+                    "description": "Defendant name"
+                  },
+                  "claim_or_charge": {
+                    "type": "string",
+                    "description": "Claim or charge details"
+                  },
+                  "date_from": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Start date"
+                  },
+                  "date_to": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "End date"
+                  },
+                  "language": {
+                    "type": "string",
+                    "description": "Language of proceedings"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Record created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourtRecord"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Search Court Records",
+        "description": "Searches court records with filters",
+        "tags": ["Records"],
+        "security": [{"BearerAuth": ["admin", "user"]}],
+        "parameters": [
+          {
+            "name": "acc_no",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Filter by account number"
+          },
+          {
+            "name": "court",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by court name"
+          },
+          {
+            "name": "date_from",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Filter by start date"
+          },
+          {
+            "name": "date_to",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "description": "Filter by end date"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Records retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CourtRecord"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/court-records/{id}": {
+      "get": {
+        "summary": "Get Court Record",
+        "description": "Retrieves a court record",
+        "tags": ["Records"],
+        "security": [{"BearerAuth": ["admin", "user"]}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Record retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourtRecord"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update Court Record",
+        "description": "Updates a court record",
+        "tags": ["Records"],
+        "security": [{"BearerAuth": ["admin"]}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CourtRecord"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Record updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourtRecord"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete Court Record",
+        "description": "Deletes a court record",
+        "tags": ["Records"],
+        "security": [{"BearerAuth": ["admin"]}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Record deleted successfully"
+          },
+          "404": {
+            "description": "Record not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique identifier"
+          },
+          "name": {
+            "type": "string",
+            "description": "User's full name"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User's email address"
+          },
+          "role": {
+            "type": "string",
+            "enum": ["admin", "user"],
+            "description": "User's access role"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Record creation timestamp"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Record update timestamp"
+          }
+        }
+      },
+      "CommissionerRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique identifier"
+          },
+          "acc_no": {
+            "type": "integer",
+            "description": "Account number"
+          },
+          "department": {
+            "type": "string",
+            "description": "Department name"
+          },
+          "file_no": {
+            "type": "string",
+            "description": "File number"
+          },
+          "subject": {
+            "type": "string",
+            "description": "Subject matter"
+          },
+          "year": {
+            "type": "integer",
+            "description": "Year"
+          },
+          "page": {
+            "type": "integer",
+            "description": "Page number"
+          },
+          "condition": {
+            "type": "string",
+            "description": "Condition of the record"
+          },
+          "record_type": {
+            "type": "string",
+            "description": "Type of record"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Record creation timestamp"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Record update timestamp"
+          }
+        }
+      },
+      "CourtRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique identifier"
+          },
+          "acc_no": {
+            "type": "integer",
+            "description": "Account number"
+          },
+          "court": {
+            "type": "string",
+            "description": "Court name"
+          },
+          "suit_no": {
+            "type": "string",
+            "description": "Suit number"
+          },
+          "plaintiff": {
+            "type": "string",
+            "description": "Plaintiff name"
+          },
+          "defendant": {
+            "type": "string",
+            "description": "Defendant name"
+          },
+          "claim_or_charge": {
+            "type": "string",
+            "description": "Claim or charge details"
+          },
+          "date_from": {
+            "type": "string",
+            "format": "date",
+            "description": "Start date"
+          },
+          "date_to": {
+            "type": "string",
+            "format": "date",
+            "description": "End date"
+          },
+          "language": {
+            "type": "string",
+            "description": "Language of proceedings"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Record creation timestamp"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Record update timestamp"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error code"
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message"
+          },
+          "details": {
+            "type": "string",
+            "description": "Optional detailed information"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}
