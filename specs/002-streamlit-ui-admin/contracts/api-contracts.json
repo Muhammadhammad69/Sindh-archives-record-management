@@ -1,0 +1,404 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Streamlit UI to DAO Interface Contracts",
+    "version": "1.0.0",
+    "description": "Interface contracts between Streamlit UI components and existing DAO layer from Phase 1"
+  },
+  "paths": {
+    "/ui/commissioner_records": {
+      "get": {
+        "summary": "Get all commissioner records for display",
+        "description": "Fetches all commissioner records from the database for public display in the UI",
+        "responses": {
+          "200": {
+            "description": "List of commissioner records",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CommissionerRecord"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-dao-method": "CommissionerRecordsDAO.get_all()",
+        "x-ui-component": "pages/commissioner_records.py"
+      }
+    },
+    "/ui/court_records": {
+      "get": {
+        "summary": "Get all court records for display",
+        "description": "Fetches all court records from the database for public display in the UI",
+        "responses": {
+          "200": {
+            "description": "List of court records",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CourtRecord"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-dao-method": "CourtRecordsDAO.get_all()",
+        "x-ui-component": "pages/court_records.py"
+      }
+    },
+    "/ui/users/authenticate": {
+      "post": {
+        "summary": "Authenticate admin user",
+        "description": "Verifies admin user credentials against the database",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserCredentials"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authentication successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication failed"
+          },
+          "403": {
+            "description": "Access denied - user not admin"
+          }
+        },
+        "x-dao-method": "UsersDAO.get_by_email()",
+        "x-security-method": "bcrypt.verify()",
+        "x-ui-component": "pages/admin_login.py"
+      }
+    },
+    "/ui/commissioner_records/create": {
+      "post": {
+        "summary": "Create new commissioner record",
+        "description": "Creates a new commissioner record in the database",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommissionerRecordInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Record created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommissionerRecord"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          }
+        },
+        "x-dao-method": "CommissionerRecordsDAO.create()",
+        "x-ui-component": "pages/add_commissioner.py"
+      }
+    },
+    "/ui/court_records/create": {
+      "post": {
+        "summary": "Create new court record",
+        "description": "Creates a new court record in the database with date validation",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CourtRecordInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Record created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourtRecord"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error"
+          }
+        },
+        "x-dao-method": "CourtRecordsDAO.create()",
+        "x-ui-component": "pages/add_court.py"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CommissionerRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique identifier for the record"
+          },
+          "acc_no": {
+            "type": "integer",
+            "description": "Account number"
+          },
+          "department": {
+            "type": "string",
+            "description": "Department name"
+          },
+          "file_no": {
+            "type": "string",
+            "description": "File number"
+          },
+          "subject": {
+            "type": "string",
+            "description": "Subject description"
+          },
+          "year": {
+            "type": "integer",
+            "description": "Year of record",
+            "minimum": 1800,
+            "maximum": 2100
+          },
+          "page": {
+            "type": "integer",
+            "description": "Page number"
+          },
+          "condition": {
+            "type": "string",
+            "description": "Physical condition of record",
+            "enum": ["FAIR/BOUND", "GOOD/BOUND", "POOR/UNBOUND", "EXCELLENT/BOUND"]
+          },
+          "record_type": {
+            "type": "string",
+            "description": "Type of record",
+            "enum": ["TEXTUAL RECORD", "PHOTOGRAPHIC RECORD", "DIGITAL RECORD"]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
+          }
+        },
+        "required": ["id", "acc_no", "department", "file_no", "subject", "year", "page", "condition", "record_type"]
+      },
+      "CourtRecord": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "Unique identifier for the record"
+          },
+          "acc_no": {
+            "type": "integer",
+            "description": "Account number"
+          },
+          "court": {
+            "type": "string",
+            "description": "Court name"
+          },
+          "suit_no": {
+            "type": "string",
+            "description": "Suit number"
+          },
+          "plaintiff": {
+            "type": "string",
+            "description": "Plaintiff name"
+          },
+          "defendant": {
+            "type": "string",
+            "description": "Defendant name"
+          },
+          "claim_or_charge": {
+            "type": "string",
+            "description": "Claim or charge description"
+          },
+          "date_from": {
+            "type": "string",
+            "format": "date",
+            "description": "Start date"
+          },
+          "date_to": {
+            "type": "string",
+            "format": "date",
+            "description": "End date"
+          },
+          "language": {
+            "type": "string",
+            "description": "Language of record"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
+          }
+        },
+        "required": ["id", "acc_no", "court", "suit_no", "plaintiff", "defendant", "claim_or_charge", "date_from", "date_to", "language"]
+      },
+      "UserCredentials": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User's email address"
+          },
+          "password": {
+            "type": "string",
+            "description": "User's password"
+          }
+        },
+        "required": ["email", "password"]
+      },
+      "AuthenticationResponse": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "integer",
+            "description": "Authenticated user's ID"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Authenticated user's email"
+          },
+          "role": {
+            "type": "string",
+            "description": "User's role"
+          },
+          "is_authenticated": {
+            "type": "boolean",
+            "description": "Authentication status"
+          }
+        },
+        "required": ["user_id", "email", "role", "is_authenticated"]
+      },
+      "CommissionerRecordInput": {
+        "type": "object",
+        "properties": {
+          "acc_no": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Account number"
+          },
+          "department": {
+            "type": "string",
+            "description": "Department name"
+          },
+          "file_no": {
+            "type": "string",
+            "description": "File number"
+          },
+          "subject": {
+            "type": "string",
+            "description": "Subject description"
+          },
+          "year": {
+            "type": "integer",
+            "minimum": 1800,
+            "maximum": 2100,
+            "description": "Year of record"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Page number"
+          },
+          "condition": {
+            "type": "string",
+            "enum": ["FAIR/BOUND", "GOOD/BOUND", "POOR/UNBOUND", "EXCELLENT/BOUND"],
+            "description": "Physical condition of record"
+          },
+          "record_type": {
+            "type": "string",
+            "enum": ["TEXTUAL RECORD", "PHOTOGRAPHIC RECORD", "DIGITAL RECORD"],
+            "description": "Type of record"
+          }
+        },
+        "required": ["acc_no", "department", "file_no", "subject", "year", "page", "condition", "record_type"]
+      },
+      "CourtRecordInput": {
+        "type": "object",
+        "properties": {
+          "acc_no": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Account number"
+          },
+          "court": {
+            "type": "string",
+            "description": "Court name"
+          },
+          "suit_no": {
+            "type": "string",
+            "description": "Suit number"
+          },
+          "plaintiff": {
+            "type": "string",
+            "description": "Plaintiff name"
+          },
+          "defendant": {
+            "type": "string",
+            "description": "Defendant name"
+          },
+          "claim_or_charge": {
+            "type": "string",
+            "description": "Claim or charge description"
+          },
+          "date_from": {
+            "type": "string",
+            "format": "date",
+            "description": "Start date"
+          },
+          "date_to": {
+            "type": "string",
+            "format": "date",
+            "description": "End date"
+          },
+          "language": {
+            "type": "string",
+            "description": "Language of record"
+          }
+        },
+        "required": ["acc_no", "court", "suit_no", "plaintiff", "defendant", "claim_or_charge", "date_from", "date_to", "language"]
+      }
+    }
+  }
+}

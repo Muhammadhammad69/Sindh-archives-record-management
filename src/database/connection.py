@@ -86,6 +86,16 @@ class ConnectionManager:
         conn = None
         try:
             conn = self.get_connection()
+            # Test the connection with a simple query to ensure it's still valid
+            try:
+                with conn.cursor() as test_cursor:
+                    test_cursor.execute("SELECT 1;")
+                    test_cursor.fetchone()
+            except psycopg2.OperationalError:
+                # Connection is invalid, return it to pool and get a fresh one
+                self.put_connection(conn)
+                conn = self.get_connection()
+
             # Set proper isolation level
             conn.set_isolation_level(extensions.ISOLATION_LEVEL_READ_COMMITTED)
             yield conn

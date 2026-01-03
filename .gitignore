@@ -63,6 +63,9 @@ log/
 .env.dev
 .env.test
 
+# Streamlit
+.streamlit/
+
 # Database
 *.db
 *.db-journal

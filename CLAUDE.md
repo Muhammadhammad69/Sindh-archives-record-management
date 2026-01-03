@@ -212,6 +212,8 @@ See `.specify/memory/constitution.md` for code quality, testing, performance, se
 ## Active Technologies
 - Python 3.11+ + psycopg2-binary (PostgreSQL), pandas (data manipulation), bcrypt (password hashing), python-dotenv (configuration), pytest (testing), black (formatting), mypy (type checking), pylint (linting) (001-database-backend-foundation)
 - PostgreSQL (NeonDB) (001-database-backend-foundation)
+- Python 3.11+ + Streamlit (latest stable), pandas, uv (package management), bcrypt (password hashing from Phase 1) (002-streamlit-ui-admin)
+- PostgreSQL (via existing Phase 1 connection and DAOs) (002-streamlit-ui-admin)
 
 ## Recent Changes
 - 001-database-backend-foundation: Added Python 3.11+ + psycopg2-binary (PostgreSQL), pandas (data manipulation), bcrypt (password hashing), python-dotenv (configuration), pytest (testing), black (formatting), mypy (type checking), pylint (linting)
