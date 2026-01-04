@@ -305,3 +305,46 @@ class CourtDAO(BaseDAO):
         from datetime import datetime
         data['updated_at'] = datetime.utcnow()
         return data
+
+    def acc_no_exists(self, acc_no: int) -> bool:
+        """
+        Check if an acc_no already exists in the court records table.
+
+        Args:
+            acc_no: The account number to check
+
+        Returns:
+            True if the acc_no exists, False otherwise
+        """
+        query = CourtRecord.get_acc_no_exists_query()
+        try:
+            result = self._execute_query(query, (acc_no,))
+            if result:
+                return result[0]['acc_no_exists']
+            return False
+        except Exception as e:
+            self.logger.error(f"Error checking if acc_no exists: {str(e)}", {
+                'acc_no': acc_no,
+                'component': 'court_records'
+            })
+            # In case of error, assume it doesn't exist to prevent blocking valid operations
+            return False
+
+    def get_all_acc_numbers(self) -> set:
+        """
+        Get all acc_no values from the court records table.
+
+        Returns:
+            Set of all acc_no values in the table
+        """
+        query = CourtRecord.get_all_acc_numbers_query()
+        try:
+            results = self._execute_query(query)
+            acc_numbers = {row['acc_no'] for row in results if row['acc_no'] is not None}
+            return acc_numbers
+        except Exception as e:
+            self.logger.error(f"Error getting all acc numbers: {str(e)}", {
+                'component': 'court_records'
+            })
+            # Return empty set in case of error
+            return set()

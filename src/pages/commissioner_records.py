@@ -30,7 +30,7 @@ def main():
 
             # Rename columns for better display
             df = df.rename(columns={
-                'acc_no': 'Account No.',
+                'acc_no': 'Accession No.',
                 'department': 'Department',
                 'file_no': 'File No.',
                 'subject': 'Subject',

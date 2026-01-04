@@ -47,7 +47,7 @@ def main():
 
             # Rename columns for better display
             df = df.rename(columns={
-                'acc_no': 'Account No.',
+                'acc_no': 'Accession No.',
                 'court': 'Court',
                 'suit_no': 'Suit No.',
                 'plaintiff': 'Plaintiff',

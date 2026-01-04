@@ -235,3 +235,29 @@ class CommissionerRecord(BaseModel):
             params = [offset]
 
         return query, params
+
+    @staticmethod
+    def get_acc_no_exists_query() -> str:
+        """
+        Get the SQL query to check if an acc_no exists in commissioner records.
+
+        Returns:
+            SQL EXISTS query string
+        """
+        return """
+        SELECT EXISTS(
+            SELECT 1 FROM commissioner_records WHERE acc_no = %s
+        ) AS acc_no_exists
+        """
+
+    @staticmethod
+    def get_all_acc_numbers_query() -> str:
+        """
+        Get the SQL query to retrieve all acc_no values from commissioner records.
+
+        Returns:
+            SQL SELECT query string
+        """
+        return """
+        SELECT DISTINCT acc_no FROM commissioner_records
+        """

@@ -20,6 +20,9 @@ def main():
     # Add Commissioner page content
     st.title("➕ Add Commissioner Record")
 
+    # Informational message about independent acc_no sequences
+    st.info("ℹ️ Note: Accession_no values must be unique within commissioner records, but can be reused in court records (separate numbering sequences)")
+
     # Mode selection
     mode = st.radio(
         "Select input mode:",
@@ -49,7 +52,7 @@ def main():
                 col1, col2 = st.columns(2)
 
                 with col1:
-                    acc_no = st.number_input("Account No.", min_value=1, step=1)
+                    acc_no = st.number_input("Accession No.", min_value=1, step=1)
                     department = st.text_input("Department")
                     file_no = st.text_input("File No.")
                     subject = st.text_area("Subject")
@@ -77,34 +80,43 @@ def main():
                             st.error(error)
                     else:
                         try:
-                            # Show loading indicator during record creation
-                            with st.spinner("Adding commissioner record..."):
-                                # Prepare data for insertion
-                                record_data = {
-                                    'acc_no': int(acc_no),
-                                    'department': department.strip(),
-                                    'file_no': file_no.strip(),
-                                    'subject': subject.strip(),
-                                    'year': int(year),
-                                    'page': int(page),
-                                    'condition': condition,
-                                    'record_type': record_type
-                                }
-
-                                # Insert the record
-                                result = dao.create(record_data)
-
-                            if result:
-                                # Set flag to indicate successful submission
-                                st.session_state.commissioner_form_submitted = True
-                                # Show success message by rerunning the page
-                                st.rerun()
+                            # Check if acc_no already exists in commissioner records
+                            if dao.acc_no_exists(int(acc_no)):
+                                st.error(f"❌ This Accession_no ({int(acc_no)}) already exists in Commissioner Records. Please use a different Accession_no.")
+                                # Preserve form data by not submitting
+                                st.stop()
                             else:
-                                st.error("Failed to add commissioner record")
+                                # Show loading indicator during record creation
+                                with st.spinner("Adding commissioner record..."):
+                                    # Prepare data for insertion
+                                    record_data = {
+                                        'acc_no': int(acc_no),
+                                        'department': department.strip(),
+                                        'file_no': file_no.strip(),
+                                        'subject': subject.strip(),
+                                        'year': int(year),
+                                        'page': int(page),
+                                        'condition': condition,
+                                        'record_type': record_type
+                                    }
+
+                                    # Insert the record
+                                    result = dao.create(record_data)
+
+                                if result:
+                                    # Set flag to indicate successful submission
+                                    st.session_state.commissioner_form_submitted = True
+                                    # Show success message by rerunning the page
+                                    st.rerun()
+                                else:
+                                    st.error("Failed to add commissioner record")
                         except Exception as e:
                             st.error(f"Error adding commissioner record: {str(e)}")
     else:  # Upload Excel File mode
         st.info("Upload an Excel file containing multiple commissioner records")
+
+        # Informational message about acc_no validation in bulk upload
+        st.info("ℹ️ During bulk upload, the system will check for duplicate Accession_no values in the database and within the uploaded file. Only records with unique Accession_no values will be inserted.")
 
         # Download template button
         template_data = generate_commissioner_template()
@@ -146,28 +158,83 @@ def main():
                         mime="text/csv"
                     )
             else:
-                # Show preview
-                bulk_handler.preview_data(validation_result['data'])
+                # Perform acc_no uniqueness validation for bulk upload
+                from src.utils.acc_no_validator import validate_bulk_acc_numbers
+                from src.utils.duplicate_detector import generate_skip_report
 
-                # Show confirmation
-                if st.button("Confirm Bulk Upload", type="primary"):
-                    with st.spinner("Processing records..."):
-                        results = bulk_handler.bulk_insert(validation_result['data'], dao)
+                with st.spinner("Checking for duplicate Accession_no values..."):
+                    validation_results = validate_bulk_acc_numbers(validation_result['data'], 'commissioner')
 
-                    # Show results
-                    st.success(f"Upload completed! Success: {results['success_count']}, Errors: {results['error_count']}")
+                # Show validation summary
+                summary = validation_results['summary']
+                st.subheader("Validation Summary")
 
-                    if results['errors']:
-                        st.subheader("Upload Errors")
-                        error_df = pd.DataFrame(results['errors'])
-                        st.dataframe(error_df)
+                col1, col2, col3, col4 = st.columns(4)
+                col1.metric("Total Records", summary['total_records'])
+                col2.metric("Valid Records", summary['valid_count'])
+                col3.metric("Duplicate in DB", summary['duplicate_count'])
+                col4.metric("Internal Duplicates", summary['internal_duplicate_count'])
 
-                        # Provide download button for error report
-                        error_csv = error_df.to_csv(index=False)
+                # Show details about duplicates if any exist
+                if summary['duplicate_count'] > 0 or summary['internal_duplicate_count'] > 0:
+                    st.subheader("Duplicate Records Details")
+
+                    if summary['duplicate_count'] > 0:
+                        st.error(f"⚠️ Found {summary['duplicate_count']} records with Accession_no values that already exist in the database")
+                        duplicate_report = generate_skip_report(validation_results['duplicate_records'], "Duplicate Accession_no in database")
+                        if not duplicate_report.empty:
+                            st.dataframe(duplicate_report)
+
+                    if summary['internal_duplicate_count'] > 0:
+                        st.warning(f"⚠️ Found {summary['internal_duplicate_count']} records with duplicate Accession_no values within the uploaded file")
+                        internal_duplicate_report = generate_skip_report(validation_results['internal_duplicates'], "Duplicate Accession_no within upload")
+                        if not internal_duplicate_report.empty:
+                            st.dataframe(internal_duplicate_report)
+
+                # Show preview of valid records
+                if not validation_results['valid_records'].empty:
+                    st.subheader("Valid Records to be Inserted")
+                    st.info(f"Preview of {min(5, len(validation_results['valid_records']))} records that will be inserted:")
+                    st.dataframe(validation_results['valid_records'].head(5))
+
+                    # Show confirmation with counts
+                    if st.button("Confirm Bulk Upload", type="primary"):
+                        with st.spinner("Processing records..."):
+                            results = bulk_handler.bulk_insert(validation_results['valid_records'], dao)
+
+                        # Show results
+                        st.success(f"Upload completed! Success: {results['success_count']}, Errors: {results['error_count']}")
+                        st.info(f"Successfully inserted {results['success_count']} records. {summary['duplicate_count'] + summary['internal_duplicate_count']} records were skipped due to duplicate Accession_no values.")
+
+                        if results['errors']:
+                            st.subheader("Upload Errors")
+                            error_df = pd.DataFrame(results['errors'])
+                            st.dataframe(error_df)
+
+                            # Provide download button for error report
+                            error_csv = error_df.to_csv(index=False)
+                            st.download_button(
+                                label="Download Error Report",
+                                data=error_csv,
+                                file_name="commissioner_upload_errors.csv",
+                                mime="text/csv"
+                            )
+                else:
+                    st.warning("⚠️ All records have duplicate Accession_no values. No new records to insert.")
+                    if summary['duplicate_count'] > 0:
+                        st.info("All records have Accession_no values that already exist in the database.")
+                    if summary['internal_duplicate_count'] > 0:
+                        st.info("All records have duplicate Accession_no values within the uploaded file.")
+
+                    # Provide option to download skipped records list
+                    all_skipped = pd.concat([validation_results['duplicate_records'], validation_results['internal_duplicates']], ignore_index=True)
+                    if not all_skipped.empty:
+                        skip_report = generate_skip_report(all_skipped, "Duplicate Accession_no")
+                        csv = skip_report.to_csv(index=False)
                         st.download_button(
-                            label="Download Error Report",
-                            data=error_csv,
-                            file_name="commissioner_upload_errors.csv",
+                            label="Download Skipped Records List",
+                            data=csv,
+                            file_name="skipped_commissioner_records.csv",
                             mime="text/csv"
                         )
 
