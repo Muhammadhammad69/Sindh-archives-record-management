@@ -11,6 +11,10 @@ A secure PostgreSQL record management system with both backend foundation and we
 - Environment-based configuration management
 - Web-based UI for public record viewing and admin data entry
 - Responsive design with search and filter capabilities
+- **NEW:** Dual-mode data entry with Excel bulk upload capability
+- **NEW:** Excel template generation for commissioner and court records
+- **NEW:** Comprehensive Excel file validation and error reporting
+- **NEW:** Progress tracking for bulk upload operations
 
 ## Requirements
 
@@ -61,11 +65,12 @@ project-root/
 │   │   ├── court_records.py         # View court records
 │   │   ├── admin_login.py           # Admin login page
 │   │   ├── admin_dashboard.py       # Admin dashboard
-│   │   ├── add_commissioner.py      # Add commissioner form
-│   │   └── add_court.py             # Add court form
+│   │   ├── add_commissioner.py      # Add commissioner form (with dual-mode)
+│   │   └── add_court.py             # Add court form (with dual-mode)
 │   ├── components/        # Reusable UI components
 │   │   ├── auth.py        # Authentication utilities
-│   │   └── sidebar.py     # Sidebar navigation
+│   │   ├── sidebar.py     # Sidebar navigation
+│   │   └── bulk_upload.py # Reusable bulk upload component
 │   ├── ui/                # UI utilities
 │   │   └── styles.py      # Custom CSS styling
 │   ├── database/          # Database connection and models
@@ -73,6 +78,9 @@ project-root/
 │   ├── security/          # Security utilities (password hashing, auth)
 │   ├── config/            # Configuration management
 │   ├── utils/             # Utility functions
+│   │   ├── excel_validator.py    # Excel column and data validation
+│   │   ├── excel_processor.py    # Excel reading and processing
+│   │   └── template_generator.py # Excel template generation
 │   └── scripts/           # Initialization scripts
 ├── tests/                 # Unit and integration tests
 └── docs/                  # Documentation
@@ -91,6 +99,11 @@ project-root/
 - Log in with admin credentials
 - Add new commissioner records through the form
 - Add new court records through the form
+- **NEW:** Use dual-mode entry with Excel bulk upload for commissioner records
+- **NEW:** Use dual-mode entry with Excel bulk upload for court records
+- **NEW:** Download Excel templates for consistent data formatting
+- **NEW:** Validate Excel files before bulk insertion
+- **NEW:** Track progress during bulk upload operations
 - Manage records with proper authentication and authorization
 
 ## Development

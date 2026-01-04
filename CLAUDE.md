@@ -214,6 +214,7 @@ See `.specify/memory/constitution.md` for code quality, testing, performance, se
 - PostgreSQL (NeonDB) (001-database-backend-foundation)
 - Python 3.11+ + Streamlit (latest stable), pandas, uv (package management), bcrypt (password hashing from Phase 1) (002-streamlit-ui-admin)
 - PostgreSQL (via existing Phase 1 connection and DAOs) (002-streamlit-ui-admin)
+- Python 3.11+ with uv for package management + Streamlit (latest stable), pandas, openpyxl>=3.1.0, xlrd>=2.0.1, existing Phase 1 and 2 dependencies (001-excel-bulk-upload)
 
 ## Recent Changes
 - 001-database-backend-foundation: Added Python 3.11+ + psycopg2-binary (PostgreSQL), pandas (data manipulation), bcrypt (password hashing), python-dotenv (configuration), pytest (testing), black (formatting), mypy (type checking), pylint (linting)
