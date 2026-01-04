@@ -44,7 +44,7 @@ def main():
                 subject = st.text_area("Subject")
 
             with col2:
-                year = st.number_input("Year", min_value=1800, max_value=2100, step=1)
+                year = st.number_input("Year", step=1)
                 page = st.number_input("Page", min_value=1, step=1)
                 condition = st.selectbox("Condition", ["FAIR/BOUND", "GOOD/BOUND", "POOR/UNBOUND", "EXCELLENT/BOUND"])
                 record_type = st.selectbox("Record Type", ["TEXTUAL RECORD", "PHOTOGRAPHIC RECORD", "DIGITAL RECORD"])

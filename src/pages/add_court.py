@@ -1,5 +1,6 @@
 import streamlit as st
-from datetime import datetime
+
+from datetime import datetime, date
 from src.components.sidebar import render_sidebar
 from src.ui.styles import apply_custom_styles
 from src.components.auth import require_auth
@@ -47,8 +48,8 @@ def main():
 
             with col2:
                 claim_or_charge = st.text_area("Claim or Charge")
-                date_from = st.date_input("Date From")
-                date_to = st.date_input("Date To")
+                date_from = st.date_input("Date From", min_value=date(1100,1,1), max_value=date(2036,12,31))
+                date_to = st.date_input("Date To", min_value=date(1100,1,1))
                 language = st.text_input("Language", help="Example: English, Hindi")
 
             submitted = st.form_submit_button("Add Court Record", type="primary")
