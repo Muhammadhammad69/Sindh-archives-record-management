@@ -36,17 +36,21 @@ def main():
 
         if records:
             # Convert to DataFrame for display
-            
+
             df = pd.DataFrame(records)
 
+            # Remove internal columns (id, created_at, updated_at) to hide from display
+            internal_columns = ['id', 'created_at', 'updated_at']
+            df_display = df.drop(columns=[col for col in internal_columns if col in df.columns])
+
             # Format dates
-            if 'date_from' in df.columns:
-                df['date_from'] = df['date_from'].apply(format_date)
-            if 'date_to' in df.columns:
-                df['date_to'] = df['date_to'].apply(format_date)
+            if 'date_from' in df_display.columns:
+                df_display['date_from'] = df_display['date_from'].apply(format_date)
+            if 'date_to' in df_display.columns:
+                df_display['date_to'] = df_display['date_to'].apply(format_date)
 
             # Rename columns for better display
-            df = df.rename(columns={
+            df_display = df_display.rename(columns={
                 'acc_no': 'Accession No.',
                 'court': 'Court',
                 'suit_no': 'Suit No.',
@@ -74,7 +78,7 @@ def main():
                 date_from_filter = st.date_input("Filter by Date From", value=None)
 
             # Apply filters
-            filtered_df = df.copy()
+            filtered_df = df_display.copy()
             if court_filter:
                 filtered_df = filtered_df[filtered_df['Court'].str.contains(court_filter, case=False, na=False)]
             if plaintiff_filter:

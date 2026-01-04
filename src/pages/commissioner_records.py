@@ -28,8 +28,12 @@ def main():
             # Convert to DataFrame for display
             df = pd.DataFrame(records)
 
+            # Remove internal columns (id, created_at, updated_at) to hide from display
+            internal_columns = ['id', 'created_at', 'updated_at']
+            df_display = df.drop(columns=[col for col in internal_columns if col in df.columns])
+
             # Rename columns for better display
-            df = df.rename(columns={
+            df_display = df_display.rename(columns={
                 'acc_no': 'Accession No.',
                 'department': 'Department',
                 'file_no': 'File No.',
@@ -53,10 +57,10 @@ def main():
                 year_filter = st.number_input("Filter by Year", min_value=0, max_value=9999, value=0, format="%d")
 
             with col3:
-                condition_filter = st.selectbox("Filter by Condition", ["All"] + list(df['Condition'].unique()) if 'Condition' in df.columns else ["All"])
+                condition_filter = st.selectbox("Filter by Condition", ["All"] + list(df_display['Condition'].unique()) if 'Condition' in df_display.columns else ["All"])
 
             # Apply filters
-            filtered_df = df.copy()
+            filtered_df = df_display.copy()
             if department_filter:
                 filtered_df = filtered_df[filtered_df['Department'].str.contains(department_filter, case=False, na=False)]
             if year_filter > 0:
