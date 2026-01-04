@@ -48,19 +48,26 @@ def main():
             st.subheader("Search & Filter")
 
             # Create filter columns
-            col1, col2, col3 = st.columns(3)
+            col1, col2, col3, col4 = st.columns(4)
 
             with col1:
-                department_filter = st.text_input("Filter by Department", "")
+                acc_no_filter = st.text_input("Filter by Accession No.", "", placeholder="e.g., 123")
 
             with col2:
-                year_filter = st.number_input("Filter by Year", min_value=0, max_value=9999, value=0, format="%d")
+                department_filter = st.text_input("Filter by Department", "")
 
             with col3:
+                year_filter = st.number_input("Filter by Year", min_value=0, max_value=9999, value=0, format="%d")
+
+            with col4:
                 condition_filter = st.selectbox("Filter by Condition", ["All"] + list(df_display['Condition'].unique()) if 'Condition' in df_display.columns else ["All"])
 
             # Apply filters
             filtered_df = df_display.copy()
+            if acc_no_filter:
+                filtered_df['acc_no_str'] = filtered_df['Accession No.'].astype(str)
+                filtered_df = filtered_df[filtered_df['acc_no_str'].str.contains(acc_no_filter, case=False, na=False)]
+                filtered_df = filtered_df.drop(columns=['acc_no_str'])
             if department_filter:
                 filtered_df = filtered_df[filtered_df['Department'].str.contains(department_filter, case=False, na=False)]
             if year_filter > 0:

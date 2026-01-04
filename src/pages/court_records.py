@@ -66,27 +66,34 @@ def main():
             st.subheader("Search & Filter")
 
             # Create filter columns
-            col1, col2, col3 = st.columns(3)
+            col1, col2, col3, col4 = st.columns(4)
 
             with col1:
-                court_filter = st.text_input("Filter by Court", "")
+                acc_no_filter = st.text_input("Filter by Accession No.", "", placeholder="e.g., 456")
 
             with col2:
-                plaintiff_filter = st.text_input("Filter by Plaintiff", "")
+                court_filter = st.text_input("Filter by Court", "")
 
             with col3:
-                date_from_filter = st.date_input("Filter by Date From", value=None)
+                plaintiff_filter = st.text_input("Filter by Plaintiff", "")
+
+            # with col4:
+            #     date_from_filte = st.date_input("Filter by Date From", value=None)
 
             # Apply filters
             filtered_df = df_display.copy()
+            if acc_no_filter:
+                filtered_df['acc_no_str'] = filtered_df['Accession No.'].astype(str)
+                filtered_df = filtered_df[filtered_df['acc_no_str'].str.contains(acc_no_filter, case=False, na=False)]
+                filtered_df = filtered_df.drop(columns=['acc_no_str'])
             if court_filter:
                 filtered_df = filtered_df[filtered_df['Court'].str.contains(court_filter, case=False, na=False)]
             if plaintiff_filter:
                 filtered_df = filtered_df[filtered_df['Plaintiff'].str.contains(plaintiff_filter, case=False, na=False)]
-            if date_from_filter:
-                # Convert date to string format for comparison
-                date_str = date_from_filter.strftime("%d/%m/%Y")
-                filtered_df = filtered_df[filtered_df['Date From'] == date_str]
+            # if date_from_filter:
+            #     # Convert date to string format for comparison
+            #     date_str = date_from_filter.strftime("%d/%m/%Y")
+            #     filtered_df = filtered_df[filtered_df['Date From'] == date_str]
 
             # Display record count
             st.markdown(f"**Total Records: {len(filtered_df)} (showing {len(filtered_df)} after filtering)**")
